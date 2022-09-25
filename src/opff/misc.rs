@@ -65,6 +65,7 @@ unsafe fn missile_changes(fighter: &mut L2CFighterCommon, boma: &mut BattleObjec
 
     // Since flash shift is side b, keep super missiles by holding attack during initial frames of neutral b
     if status == *FIGHTER_STATUS_KIND_SPECIAL_N
+    && 5.0 <= motion_frame
     && motion_frame <= 6.0
     && (ControlModule::check_button_on(boma, *CONTROL_PAD_BUTTON_ATTACK)
         || ControlModule::check_button_on(boma, *CONTROL_PAD_BUTTON_ATTACK_RAW)) {

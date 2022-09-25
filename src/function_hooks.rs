@@ -119,6 +119,11 @@ pub unsafe fn get_param_float_hook(x0 /*boma*/: u64, x1 /*param_type*/: u64, x2 
         && VarModule::is_flag(object, vars::samus::instance::MORPHBALL_STALL_USED) {
             return 0.0;
         }
+
+        // Do this through function hook instead of editing fighter_param.prc as to facilitate using this mod with bigger ones that make way more changes to fighter_param
+        if x1 == hash40("landing_attack_air_frame_hi") {
+            return 10.0;
+        }
     }
     original!()(x0, x1, x2)
 }
