@@ -188,22 +188,24 @@ unsafe fn aim_armcannon(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectM
         let angle = 0.0_f32.clamp(prev_angle - 8.0, prev_angle + 8.0);
         VarModule::set_float(object, vars::samus::instance::AIM_ANGLE, angle);
 
-        if angle.abs() > 45.0
-        && situation == *SITUATION_KIND_AIR {
-            if status == *FIGHTER_SAMUS_STATUS_KIND_SPECIAL_S2A {
-                let shoulderr_offset = angle - (45.0 * angle.signum());
-                shoulderr_rot.z += shoulderr_offset;
-                fighter.set_joint_rotate("shoulderr", shoulderr_rot);
+        if angle != 0.0_f32 {
+            if angle.abs() > 45.0
+            && situation == *SITUATION_KIND_AIR {
+                if status == *FIGHTER_SAMUS_STATUS_KIND_SPECIAL_S2A {
+                    let shoulderr_offset = angle - (45.0 * angle.signum());
+                    shoulderr_rot.z += shoulderr_offset;
+                    fighter.set_joint_rotate("shoulderr", shoulderr_rot);
+                }
+                else {
+                    let waist_offset = (angle - (45.0 * angle.signum())) * -1.0;
+                    waist_rot.z += waist_offset;
+                    fighter.set_joint_rotate("waist", waist_rot);
+                }
             }
-            else {
-                let waist_offset = (angle - (45.0 * angle.signum())) * -1.0;
-                waist_rot.z += waist_offset;
-                fighter.set_joint_rotate("waist", waist_rot);
-            }
+            let arm_offset = angle.clamp(-45.0, 45.0) * flip_y;
+            armr_rot.z += arm_offset;
+            fighter.set_joint_rotate("armr", armr_rot);
         }
-        let arm_offset = angle.clamp(-45.0, 45.0) * flip_y;
-        armr_rot.z += arm_offset;
-        fighter.set_joint_rotate("armr", armr_rot);
     }
 }
 

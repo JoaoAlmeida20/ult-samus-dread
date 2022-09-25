@@ -279,7 +279,7 @@ unsafe fn check_resets(boma: &mut BattleObjectModuleAccessor) {
         *FIGHTER_SAMUS_STATUS_KIND_SPECIAL_AIR_LW].contains(&status)
         && situation == *SITUATION_KIND_GROUND
         && !is_touch_wall
-        && (frame <= 11.0
+        && (frame <= 20.0
             || min_speed_condition);
 
     // Check if not in valid condition for having speedboost
