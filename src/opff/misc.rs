@@ -134,13 +134,13 @@ unsafe fn aim_armcannon(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectM
 
     // Getting the default joint rotations from the current animation
     let mut armr_rot = Vector3f::zero();
-    MotionModule::joint_local_rotation(boma, Hash40::new("armr"), &mut armr_rot);
+    // MotionModule::joint_local_rotation(boma, Hash40::new("armr"), &mut armr_rot);
     let mut arml_rot = Vector3f::zero();
-    MotionModule::joint_local_rotation(boma, Hash40::new("arml"), &mut arml_rot);
+    // MotionModule::joint_local_rotation(boma, Hash40::new("arml"), &mut arml_rot);
     let mut shoulderr_rot = Vector3f::zero();
-    MotionModule::joint_local_rotation(boma, Hash40::new("shoulderr"), &mut shoulderr_rot);
+    // MotionModule::joint_local_rotation(boma, Hash40::new("shoulderr"), &mut shoulderr_rot);
     let mut waist_rot = Vector3f::zero();
-    MotionModule::joint_local_rotation(boma, Hash40::new("waist"), &mut waist_rot);
+    // MotionModule::joint_local_rotation(boma, Hash40::new("waist"), &mut waist_rot);
 
     if super_missile_condition
     || charge_shot_condition {

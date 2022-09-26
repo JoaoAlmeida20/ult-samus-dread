@@ -61,9 +61,11 @@ unsafe fn speedboost_main(fighter: &mut L2CFighterCommon, boma: &mut BattleObjec
     let motion_frame = MotionModule::frame(boma);
     let stick_y = ControlModule::get_stick_y(boma);
 
-    if *FIGHTER_STATUS_KIND_RUN == status && motion_frame > vl::param_speedboost::charge_frame {
-        speedboost_start(boma);
-        PLAY_SE_REMAIN(fighter, Hash40::new("se_samus_special_n04"));
+    if *FIGHTER_STATUS_KIND_RUN == status
+    && motion_frame > vl::param_speedboost::charge_frame
+    && !VarModule::is_flag(object, vars::samus::instance::SPEEDBOOST_ACTIVE) {
+            speedboost_start(boma);
+            PLAY_SE_REMAIN(fighter, Hash40::new("se_samus_special_n04"));
     }
 
     if VarModule::is_flag(object, vars::samus::instance::SPEEDBOOST_ACTIVE) {
