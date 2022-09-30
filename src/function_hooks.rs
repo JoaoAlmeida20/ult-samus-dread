@@ -3,8 +3,8 @@ use table_consts::*;
 
 pub fn install() {
     skyline::install_hooks!(
-        is_enable_transition_term_hook,
-        change_status_request_from_script_hook,
+        // is_enable_transition_term_hook,
+        // change_status_request_from_script_hook,
         get_param_float_hook
     );
 }
