@@ -19,6 +19,7 @@ pub mod samus {
             pub const FLASHSHIFT_COOLDOWN_TIMER : i32 = 0x0101;
             pub const FLASHSHIFT_CHAIN_TIMER : i32 = 0x0102;
             pub const SHINESPARK_TIMER : i32 = 0x0103;
+            pub const GBEAM_ANGLE: i32 = 0x0104;
     }
 }
 

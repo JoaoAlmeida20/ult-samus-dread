@@ -109,21 +109,6 @@ unsafe fn aim_armcannon(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectM
         || (status == *FIGHTER_STATUS_KIND_SPECIAL_N
             && motion_frame <= 12.0);
 
-    /* Window for aiming arm cannon when using grapple beam (zair and grab)
-    let grapple_condition =
-        (status == *FIGHTER_STATUS_KIND_AIR_LASSO
-            && 6.0 <= motion_frame
-            && motion_frame <= 31.0)
-        || (status == *FIGHTER_STATUS_KIND_CATCH
-            && 8.0 <= motion_frame
-            && motion_frame <= 29.0)
-        || (status == *FIGHTER_STATUS_KIND_CATCH_DASH
-            && 15.0 <= motion_frame
-            && motion_frame <= 28.0)
-        || (status == *FIGHTER_STATUS_KIND_CATCH_TURN 
-            && 15.0 <= motion_frame
-            && motion_frame <= 30.0); */
-
     // Rotation is flipped around for grounded super missiles for some reason
     let flip_y = if status == *FIGHTER_SAMUS_STATUS_KIND_SPECIAL_S2G {
         -1.0
@@ -132,15 +117,10 @@ unsafe fn aim_armcannon(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectM
         1.0
     };
 
-    // Getting the default joint rotations from the current animation
     let mut armr_rot = Vector3f::zero();
-    // MotionModule::joint_local_rotation(boma, Hash40::new("armr"), &mut armr_rot);
     let mut arml_rot = Vector3f::zero();
-    // MotionModule::joint_local_rotation(boma, Hash40::new("arml"), &mut arml_rot);
     let mut shoulderr_rot = Vector3f::zero();
-    // MotionModule::joint_local_rotation(boma, Hash40::new("shoulderr"), &mut shoulderr_rot);
     let mut waist_rot = Vector3f::zero();
-    // MotionModule::joint_local_rotation(boma, Hash40::new("waist"), &mut waist_rot);
 
     if super_missile_condition
     || charge_shot_condition {
