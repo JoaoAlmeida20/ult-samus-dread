@@ -42,9 +42,16 @@ pub fn samus_gbeam_frame(weapon: &mut smash::lua2cpp::L2CFighterBase) {
                 let stick_x = ControlModule::get_stick_x(samus_boma);
                 let stick_y = ControlModule::get_stick_y(samus_boma);
                 let lr = PostureModule::lr(samus_boma);
+                let stick_x_lr = 
+                    if stick_x == 0.0_f32 {
+                        stick_x
+                    }
+                    else {
+                        stick_x * lr
+                    };
 
                 let prev_angle = VarModule::get_float(samus, vars::samus::instance::GBEAM_ANGLE);
-                let angle = stick_y.atan2(stick_x * lr).to_degrees().clamp(prev_angle - 15.0, prev_angle + 15.0);
+                let angle = stick_y.atan2(stick_x_lr).to_degrees().clamp(prev_angle - 15.0, prev_angle + 15.0);
                 VarModule::set_float(samus, vars::samus::instance::GBEAM_ANGLE, angle);
 
                 weapon.set_joint_rotate("gbeam1", Vector3f::new(0.0, 0.0, -angle/6.0));
