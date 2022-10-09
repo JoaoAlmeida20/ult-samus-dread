@@ -171,16 +171,14 @@ unsafe fn shinespark_air(boma: &mut BattleObjectModuleAccessor) {
     let object = utils::get_battle_object_from_id((*boma).battle_object_id);
     let motion_frame = MotionModule::frame(boma);
     let status = StatusModule::status_kind(boma);
-    let is_button_on_special_all = 
-        ControlModule::check_button_on(boma, *CONTROL_PAD_BUTTON_SPECIAL)
-        || ControlModule::check_button_on(boma, *CONTROL_PAD_BUTTON_SPECIAL_RAW)
-        || ControlModule::check_button_on(boma, *CONTROL_PAD_BUTTON_SPECIAL_RAW2);
+    let is_button_on_special_all = ControlModule::check_button_on(boma, *CONTROL_PAD_BUTTON_SPECIAL);
 
     if VarModule::get_float(object, vars::samus::instance::SHINESPARK_TIMER) > 0.0
     && is_button_on_special_all 
     && status == *FIGHTER_STATUS_KIND_ATTACK_AIR
     && motion_frame <= 6.0 {
         MotionModule::change_motion(boma, Hash40::new("attack_dash"), 0.0, 1.0, false, 0.0, false, false);
+        ControlModule::clear_command(boma, false);
     }
 }
 

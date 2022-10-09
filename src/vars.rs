@@ -7,6 +7,7 @@ pub mod samus {
             pub const FLASHSHIFT_USED : i32 = 0x0101;
             pub const SHINESPARK_USED : i32 = 0x0102;
             pub const SPEEDBOOST_ACTIVE : i32 = 0x0103;
+            pub const IS_SWING: i32 = 0x0104;
 
         // ints
             pub const BOMB_COUNTER : i32 = 0x0100;
@@ -20,6 +21,9 @@ pub mod samus {
             pub const FLASHSHIFT_CHAIN_TIMER : i32 = 0x0102;
             pub const SHINESPARK_TIMER : i32 = 0x0103;
             pub const GBEAM_ANGLE: i32 = 0x0104;
+            pub const HANG_PREV_POS_X: i32 = 0x0105;
+            pub const HANG_PREV_POS_Y: i32 = 0x0106;
+            pub const SWING_SPEED_X: i32 = 0x0107;
     }
 }
 

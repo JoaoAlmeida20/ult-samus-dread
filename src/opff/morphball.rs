@@ -18,10 +18,7 @@ unsafe fn main(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectModuleAcce
     let motion_frame = MotionModule::frame(boma);
     let status = StatusModule::status_kind(boma);
     let situation = StatusModule::situation_kind(boma);
-    let is_button_trigger_special_all = 
-        ControlModule::check_button_trigger(boma, *CONTROL_PAD_BUTTON_SPECIAL)
-        || ControlModule::check_button_trigger(boma, *CONTROL_PAD_BUTTON_SPECIAL_RAW)
-        || ControlModule::check_button_trigger(boma, *CONTROL_PAD_BUTTON_SPECIAL_RAW2);
+    let is_button_trigger_special_all = ControlModule::check_button_trigger(boma, *CONTROL_PAD_BUTTON_SPECIAL);
 
     // Freeze motion rate if x speed is 0 so that ball doesn't roll if you're standing still
     if 20.0 <= motion_frame

@@ -2,11 +2,103 @@ use super::*;
 use table_consts::*;
 
 pub unsafe fn frame(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectModuleAccessor) {
+    swing(fighter, boma);
     flashshift(fighter, boma);
     missile_changes(fighter, boma);
     aim_armcannon(fighter, boma);
     nspecial_cancel(fighter, boma);
     var_resets(fighter, boma);
+}
+
+unsafe fn swing(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectModuleAccessor) {
+    let status = StatusModule::status_kind(boma);
+    let situation = StatusModule::situation_kind(boma);
+    let lr = PostureModule::lr(boma);
+    let air_speed_x_stable = WorkModule::get_param_float(boma, hash40("air_speed_x_stable"), 0);
+
+    let pos_x = PostureModule::pos_x(boma);
+    let pos_y = PostureModule::pos_y(boma);
+    let prev_pos_x = VarModule::get_float(fighter.battle_object, vars::samus::instance::HANG_PREV_POS_X);
+    let prev_pos_y = VarModule::get_float(fighter.battle_object, vars::samus::instance::HANG_PREV_POS_Y);
+    VarModule::set_float(fighter.battle_object, vars::samus::instance::HANG_PREV_POS_X, pos_x);
+    VarModule::set_float(fighter.battle_object, vars::samus::instance::HANG_PREV_POS_Y, pos_y);
+
+    let real_speed_x = KineticModule::get_sum_speed_x(boma, *KINETIC_ENERGY_RESERVE_ATTRIBUTE_MAIN);
+    let real_speed_y = KineticModule::get_sum_speed_y(boma, *KINETIC_ENERGY_RESERVE_ATTRIBUTE_MAIN);
+    println!("real_speed_x: {}", real_speed_x);
+    println!("real_speed_y: {}", real_speed_y);
+
+    if VarModule::is_flag(fighter.battle_object, vars::samus::instance::IS_SWING) {
+        if situation == *SITUATION_KIND_AIR
+        && real_speed_x.abs() > air_speed_x_stable {
+            let speed_x = VarModule::get_float(fighter.battle_object, vars::samus::instance::SWING_SPEED_X);
+            sv_kinetic_energy!(
+                set_stable_speed,
+                fighter,
+                FIGHTER_KINETIC_ENERGY_ID_CONTROL,
+                speed_x.abs().max(air_speed_x_stable)
+            );
+            sv_kinetic_energy!(
+                set_limit_speed,
+                fighter,
+                FIGHTER_KINETIC_ENERGY_ID_CONTROL,
+                speed_x.abs().max(air_speed_x_stable)
+            );
+        }
+        else {
+            VarModule::off_flag(fighter.battle_object, vars::samus::instance::IS_SWING);
+            if situation == *SITUATION_KIND_AIR {
+                sv_kinetic_energy!(
+                    set_stable_speed,
+                    fighter,
+                    FIGHTER_KINETIC_ENERGY_ID_CONTROL,
+                    air_speed_x_stable
+                );
+                sv_kinetic_energy!(
+                    set_limit_speed,
+                    fighter,
+                    FIGHTER_KINETIC_ENERGY_ID_CONTROL,
+                    WorkModule::get_param_float(boma, hash40("common"), hash40("air_speed_x_limit"))
+                );
+            }
+        }
+    }
+
+    if status == *FIGHTER_STATUS_KIND_AIR_LASSO_HANG
+    && ControlModule::check_button_release(boma, *CONTROL_PAD_BUTTON_GUARD) {
+        let speed_x = (pos_x - prev_pos_x).clamp(-2.5, 2.5);
+        let speed_y = (pos_y - prev_pos_y).max(0.0);
+        println!("speed_x: {}", speed_x);
+        println!("speed_y: {}", speed_y);
+
+        StatusModule::change_status_request(boma, *FIGHTER_STATUS_KIND_FALL, true);
+        VarModule::set_float(fighter.battle_object, vars::samus::instance::SWING_SPEED_X, speed_x);
+        VarModule::on_flag(fighter.battle_object, vars::samus::instance::IS_SWING);
+        sv_kinetic_energy!(
+            set_stable_speed,
+            fighter,
+            FIGHTER_KINETIC_ENERGY_ID_CONTROL,
+            speed_x.abs().max(air_speed_x_stable)
+        );
+        sv_kinetic_energy!(
+            set_limit_speed,
+            fighter,
+            FIGHTER_KINETIC_ENERGY_ID_CONTROL,
+            speed_x.abs().max(air_speed_x_stable)
+        );
+        sv_kinetic_energy!(
+            set_speed,
+            fighter,
+            FIGHTER_KINETIC_ENERGY_ID_CONTROL,
+            speed_x
+        );
+        sv_kinetic_energy!(
+            set_speed,
+            fighter,
+            FIGHTER_KINETIC_ENERGY_ID_GRAVITY,
+            speed_y
+        );
+    }
 }
 
 unsafe fn flashshift(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectModuleAccessor) {
@@ -75,6 +167,7 @@ unsafe fn missile_changes(fighter: &mut L2CFighterCommon, boma: &mut BattleObjec
         else {
             fighter.change_status(FIGHTER_SAMUS_STATUS_KIND_SPECIAL_S2A.into(), false.into());
         }
+        ControlModule::clear_command(boma, false);
     }
 
     // Land cancel super missiles
