@@ -11,6 +11,9 @@ pub unsafe fn frame(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectModul
         springball(fighter, boma);
         ballspark(fighter, boma);
     }
+    else {
+        roll_cancel(fighter, boma);
+    }
 }
 
 unsafe fn main(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectModuleAccessor) {
@@ -81,11 +84,13 @@ unsafe fn bomb(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectModuleAcce
     let is_button_trigger_attack_all =
         ControlModule::check_button_trigger(boma, *CONTROL_PAD_BUTTON_ATTACK)
         || ControlModule::check_button_trigger(boma, *CONTROL_PAD_BUTTON_ATTACK_RAW);
+    let bomb_max_req = WorkModule::get_param_int(boma, hash40("param_special_lw"), hash40("bomb_max_req"));
 
     // Place bomb by pressing Attack
     if is_button_trigger_attack_all
     && motion_frame < 40.0
-    && VarModule::get_int(object, vars::samus::instance::BOMB_COUNTER) < vl::param_speciallw::bomb_max_num_airtime {
+    && VarModule::get_int(object, vars::samus::instance::BOMB_COUNTER) < vl::param_speciallw::bomb_max_num_airtime
+    && (ArticleModule::get_active_num(boma, *FIGHTER_SAMUS_GENERATE_ARTICLE_BOMB) as i32) < bomb_max_req {
         ArticleModule::generate_article_enable(boma, *FIGHTER_SAMUS_GENERATE_ARTICLE_BOMB, false, -1);
         ArticleModule::shoot_exist(boma, *FIGHTER_SAMUS_GENERATE_ARTICLE_BOMB, app::ArticleOperationTarget(*ARTICLE_OPE_TARGET_ALL), false);
         VarModule::inc_int(object, vars::samus::instance::BOMB_COUNTER);
@@ -155,5 +160,28 @@ unsafe fn ballspark(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectModul
         else if situation == *SITUATION_KIND_AIR {
             MotionModule::change_motion_force_inherit_frame(boma, Hash40::new("special_air_lw_shinespark"), 18.0, 1.0, 1.0);
         }
+    }
+}
+
+unsafe fn roll_cancel(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectModuleAccessor) {
+    let motion_frame = MotionModule::frame(boma);
+    let status = StatusModule::status_kind(boma);
+    let is_button_on_special = ControlModule::check_button_on(boma, *CONTROL_PAD_BUTTON_SPECIAL);
+    
+    let escape_f_condition =
+        status == *FIGHTER_STATUS_KIND_ESCAPE_F
+        && 13.0 <= motion_frame
+        && motion_frame < 22.0;
+
+    let escape_b_condition =
+        status == *FIGHTER_STATUS_KIND_ESCAPE_B
+        && 15.0 <= motion_frame
+        && motion_frame < 24.0;
+
+    if (escape_f_condition || escape_b_condition)
+    && is_button_on_special {
+        WorkModule::on_flag(boma, *FIGHTER_SAMUS_STATUS_SPECIAL_LW_FLAG_MV);
+        StatusModule::change_status_request(boma, *FIGHTER_SAMUS_STATUS_KIND_SPECIAL_GROUND_LW, false);
+        MotionModule::change_motion_force_inherit_frame(boma, Hash40::new("special_lw"), 11.0, 1.0, 1.0);
     }
 }
