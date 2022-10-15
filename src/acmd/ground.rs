@@ -234,7 +234,7 @@ unsafe fn attack_dash_effect(fighter: &mut L2CAgentBase) {
     }
 }
 
-#[acmd_script( agent = "samus", script = "game_attack11" , category = ACMD_GAME)]
+#[acmd_script( agent = "samus", script = "game_attack11" , category = ACMD_GAME, low_priority)]
 unsafe fn attack11_game(fighter: &mut L2CAgentBase) {
     let lua_state = fighter.lua_state_agent;
     let boma = sv_system::battle_object_module_accessor(lua_state);
