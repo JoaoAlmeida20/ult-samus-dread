@@ -6,7 +6,6 @@ pub unsafe fn frame(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectModul
     flashshift(fighter, boma);
     missile_changes(fighter, boma);
     aim_armcannon(fighter, boma);
-    nspecial_cancel(fighter, boma);
     var_resets(fighter, boma);
 }
 
@@ -278,19 +277,6 @@ unsafe fn aim_armcannon(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectM
             let arm_offset = angle.clamp(-45.0, 45.0) * flip_y;
             armr_rot.z += arm_offset;
             fighter.set_joint_rotate("armr", armr_rot);
-        }
-    }
-}
-
-unsafe fn nspecial_cancel(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectModuleAccessor) {
-    let status = StatusModule::status_kind(boma);
-    let situation = StatusModule::situation_kind(boma);
-
-    if status == *FIGHTER_SAMUS_STATUS_KIND_SPECIAL_N_C {
-        if situation == *SITUATION_KIND_AIR {
-            if WorkModule::get_int(boma, *FIGHTER_SAMUS_STATUS_SPECIAL_N_WORK_INT_CANCEL_TYPE) == *FIGHTER_SAMUS_SPECIAL_N_CANCEL_TYPE_AIR_ESCAPE_AIR {
-                WorkModule::set_int(boma, *FIGHTER_SAMUS_SPECIAL_N_CANCEL_TYPE_NONE, *FIGHTER_SAMUS_STATUS_SPECIAL_N_WORK_INT_CANCEL_TYPE);
-            }
         }
     }
 }
