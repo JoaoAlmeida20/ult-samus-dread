@@ -51,8 +51,10 @@ unsafe extern "C" fn change_status_callback(fighter: &mut L2CFighterCommon) -> L
         || (current_status == *FIGHTER_STATUS_KIND_RUN_BRAKE
             && ![*FIGHTER_STATUS_KIND_SQUAT, *FIGHTER_STATUS_KIND_ATTACK_LW3].contains(&next_status))
         // 3. about to double jump
-        || next_status == *FIGHTER_STATUS_KIND_JUMP_AERIAL {
-            opff::speedboost::speedboost_end(boma);
+        || next_status == *FIGHTER_STATUS_KIND_JUMP_AERIAL
+        // 4. in dash attack
+        || current_status == *FIGHTER_STATUS_KIND_ATTACK_DASH {
+            opff::speedboost::speedboost_end(fighter, boma);
         }
 
         // Buffer run if holding forward instead of walk during certain statuses so that speedboost can be maintained
