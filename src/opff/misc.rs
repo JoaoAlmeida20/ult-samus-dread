@@ -361,4 +361,8 @@ unsafe fn var_resets(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectModu
         VarModule::off_flag(object, vars::samus::instance::MORPHBALL_STALL_USED);
         VarModule::set_int(object, vars::samus::instance::BOMB_COUNTER, 0);
     }
+
+    if status != *FIGHTER_SAMUS_STATUS_KIND_SPECIAL_N_H {
+        VarModule::set_int(object, vars::samus::instance::DOUBLE_TAP_DOWN_FRAME, 0);
+    }
 }

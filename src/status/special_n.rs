@@ -51,6 +51,7 @@ unsafe fn main_special_n_h(fighter: &mut L2CFighterCommon) -> L2CValue {
 
 unsafe extern "C" fn main_special_n_h_loop(fighter: &mut L2CFighterCommon) -> L2CValue {
     let boma = fighter.module_accessor;
+    let object = fighter.battle_object;
     let prev_situation = fighter.global_table[PREV_SITUATION_KIND].get_i32();
     let situation = fighter.global_table[SITUATION_KIND].get_i32();
 
@@ -148,6 +149,26 @@ unsafe extern "C" fn main_special_n_h_loop(fighter: &mut L2CFighterCommon) -> L2
 
         if cshot_charge_current_frame >= cshot_charge_max_frame {
             WorkModule::set_int(boma, cshot_charge_max_frame as i32, *FIGHTER_SAMUS_INSTANCE_WORK_ID_INT_SPECIAL_N_COUNT);
+
+            if VarModule::get_int(object, vars::samus::instance::DOUBLE_TAP_DOWN_FRAME) != 0
+            && ControlModule::get_stick_y(boma) <= -0.75 {
+                VarModule::set_int(object, vars::samus::instance::BOMB_BURST_COUNTER, 3);
+                fighter.change_status(FIGHTER_STATUS_KIND_SPECIAL_LW.into(), true.into());
+                return 1.into();
+            }
+
+            if (ControlModule::get_stick_prev_y(boma) <= -0.75
+                && ControlModule::get_stick_y(boma) > -0.75
+                && VarModule::get_int(object, vars::samus::instance::DOUBLE_TAP_DOWN_FRAME) == 0)
+            || (ControlModule::get_stick_y(boma) > -0.75
+                && VarModule::get_int(object, vars::samus::instance::DOUBLE_TAP_DOWN_FRAME) != 0) {
+                VarModule::inc_int(object, vars::samus::instance::DOUBLE_TAP_DOWN_FRAME);
+            }
+
+            if VarModule::get_int(object, vars::samus::instance::DOUBLE_TAP_DOWN_FRAME) > 5 {
+                VarModule::set_int(object, vars::samus::instance::DOUBLE_TAP_DOWN_FRAME, 0);
+            }
+
             if ControlModule::check_button_off(boma, *CONTROL_PAD_BUTTON_SPECIAL) {
                 fighter.change_status(FIGHTER_SAMUS_STATUS_KIND_SPECIAL_N_E.into(), false.into());
                 return 1.into();

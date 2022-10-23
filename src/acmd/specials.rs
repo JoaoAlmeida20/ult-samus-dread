@@ -20,6 +20,8 @@ pub fn install() {
 unsafe fn special_lw_game(fighter: &mut L2CAgentBase) {
     let lua_state = fighter.lua_state_agent;
     let boma = sv_system::battle_object_module_accessor(lua_state);
+    let object = fighter.battle_object;
+
     frame(lua_state, 4.0);
     if is_excute(fighter) {
         WorkModule::on_flag(boma, *FIGHTER_SAMUS_STATUS_SPECIAL_LW_FLAG_JUMP);
@@ -32,6 +34,12 @@ unsafe fn special_lw_game(fighter: &mut L2CAgentBase) {
     if is_excute(fighter) {
         VisibilityModule::set_int64(boma, Hash40::new("body").hash as i64, Hash40::new("body_sphere").hash as i64);
         WorkModule::on_flag(boma, *FIGHTER_SAMUS_STATUS_SPECIAL_LW_FLAG_MV);
+
+        let bomb_burst_counter = VarModule::get_int(object, vars::samus::instance::BOMB_BURST_COUNTER);
+        for n in 0..bomb_burst_counter {
+            ArticleModule::generate_article_enable(boma, *FIGHTER_SAMUS_GENERATE_ARTICLE_BOMB, false, -1);
+            ArticleModule::shoot_exist(boma, *FIGHTER_SAMUS_GENERATE_ARTICLE_BOMB, app::ArticleOperationTarget(*ARTICLE_OPE_TARGET_ALL), false);    
+        }
     }
     frame(lua_state, 44.0);
     if is_excute(fighter) {
@@ -49,11 +57,18 @@ unsafe fn special_air_lw_game(fighter: &mut L2CAgentBase) {
     let lua_state = fighter.lua_state_agent;
     let boma = sv_system::battle_object_module_accessor(lua_state);
     let object = utils::get_battle_object_from_id((*boma).battle_object_id);
+
     frame(lua_state, 11.0);
     if is_excute(fighter) {
         VisibilityModule::set_int64(boma, Hash40::new("body").hash as i64, Hash40::new("body_sphere").hash as i64);
         WorkModule::on_flag(boma, *FIGHTER_SAMUS_STATUS_SPECIAL_LW_FLAG_MV);
         VarModule::on_flag(object, vars::samus::instance::MORPHBALL_STALL_USED);
+
+        let bomb_burst_counter = VarModule::get_int(object, vars::samus::instance::BOMB_BURST_COUNTER);
+        for n in 0..bomb_burst_counter {
+            ArticleModule::generate_article_enable(boma, *FIGHTER_SAMUS_GENERATE_ARTICLE_BOMB, false, -1);
+            ArticleModule::shoot_exist(boma, *FIGHTER_SAMUS_GENERATE_ARTICLE_BOMB, app::ArticleOperationTarget(*ARTICLE_OPE_TARGET_ALL), false);    
+        }
     }
     frame(lua_state, 44.0);
     if is_excute(fighter) {
