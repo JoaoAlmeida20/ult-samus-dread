@@ -148,8 +148,10 @@ unsafe extern "C" fn main_special_n_h_loop(fighter: &mut L2CFighterCommon) -> L2
 
         if cshot_charge_current_frame >= cshot_charge_max_frame {
             WorkModule::set_int(boma, cshot_charge_max_frame as i32, *FIGHTER_SAMUS_INSTANCE_WORK_ID_INT_SPECIAL_N_COUNT);
-            fighter.change_status(FIGHTER_SAMUS_STATUS_KIND_SPECIAL_N_E.into(), false.into());
-            return 1.into();
+            if ControlModule::check_button_off(boma, *CONTROL_PAD_BUTTON_SPECIAL) {
+                fighter.change_status(FIGHTER_SAMUS_STATUS_KIND_SPECIAL_N_E.into(), false.into());
+                return 1.into();
+            }
         }
         else {
             let charge_fraction = cshot_charge_current_frame / cshot_charge_max_frame;
