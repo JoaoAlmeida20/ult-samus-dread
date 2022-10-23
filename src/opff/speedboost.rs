@@ -7,7 +7,7 @@ pub unsafe fn frame(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectModul
     shinespark_storage(fighter, boma);
     shinespark_air(boma);
     sparks_effect(fighter, boma);
-    check_resets(boma);
+    check_resets(fighter, boma);
 }
 
 pub unsafe fn speedboost_start(boma: &mut BattleObjectModuleAccessor) {
@@ -32,7 +32,7 @@ pub unsafe fn speedboost_start(boma: &mut BattleObjectModuleAccessor) {
     }
 }
 
-pub unsafe fn speedboost_end(boma: &mut BattleObjectModuleAccessor) {
+pub unsafe fn speedboost_end(fighter: &mut smash::lua2cpp::L2CFighterCommon, boma: &mut BattleObjectModuleAccessor) {
     let object = utils::get_battle_object_from_id((*boma).battle_object_id);
     let motion = MotionModule::motion_kind(boma);
     let situation = StatusModule::situation_kind(boma);
@@ -40,6 +40,12 @@ pub unsafe fn speedboost_end(boma: &mut BattleObjectModuleAccessor) {
 
     VarModule::off_flag(object, vars::samus::instance::SPEEDBOOST_ACTIVE);
     JostleModule::set_status(boma, true);
+    sv_kinetic_energy!(
+        set_speed_mul,
+        fighter,
+        FIGHTER_KINETIC_ENERGY_ID_MOTION,
+        1.0
+    );
 
     // If samus is in morphball, reset the status to reset the speed params to regular values
     if [hash40("special_lw"),
@@ -61,7 +67,7 @@ unsafe fn speedboost_main(fighter: &mut L2CFighterCommon, boma: &mut BattleObjec
     let motion_frame = MotionModule::frame(boma);
     let stick_y = ControlModule::get_stick_y(boma);
 
-    if *FIGHTER_STATUS_KIND_RUN == status
+    if status == *FIGHTER_STATUS_KIND_RUN
     && motion_frame > vl::param_speedboost::charge_frame
     && !VarModule::is_flag(object, vars::samus::instance::SPEEDBOOST_ACTIVE) {
             speedboost_start(boma);
@@ -80,22 +86,18 @@ unsafe fn speedboost_main(fighter: &mut L2CFighterCommon, boma: &mut BattleObjec
             );
         }
 
+        // Lean forward during speedboost run
+        if status == *FIGHTER_STATUS_KIND_RUN {
+            let waist_rot = Vector3f::new(0.0, 0.0, 16.0);
+            fighter.set_joint_rotate("waist", waist_rot);
+        }
+
         JostleModule::set_status(boma, false);
 
         // Allow crouch during run in speedboost so you can store shinespark
         if [*FIGHTER_STATUS_KIND_RUN, *FIGHTER_STATUS_KIND_RUN_BRAKE].contains(&status)
         && stick_y < WorkModule::get_param_float(boma, hash40("common"), hash40("squat_stick_y")) {
             StatusModule::change_status_request_from_script(boma, *FIGHTER_STATUS_KIND_SQUAT, false);
-        }
-    }
-    else {
-        if status != *FIGHTER_STATUS_KIND_ATTACK_LW3 {
-            sv_kinetic_energy!(
-                set_speed_mul,
-                fighter,
-                FIGHTER_KINETIC_ENERGY_ID_MOTION,
-                1.0
-            );
         }
     }
 }
@@ -230,7 +232,7 @@ unsafe fn sparks_effect(fighter: &mut smash::lua2cpp::L2CFighterCommon, boma: &m
     }
 }
 
-unsafe fn check_resets(boma: &mut BattleObjectModuleAccessor) {
+unsafe fn check_resets(fighter: &mut smash::lua2cpp::L2CFighterCommon, boma: &mut BattleObjectModuleAccessor) {
     let object = utils::get_battle_object_from_id((*boma).battle_object_id);
     let speedboost_speed_max = vl::param_speedboost::speed_max;
     let frame = MotionModule::frame(boma);
@@ -289,7 +291,7 @@ unsafe fn check_resets(boma: &mut BattleObjectModuleAccessor) {
         || jumpsquat_condition
         || air_conditions
         || ground_morphball_conditions) {
-        speedboost_end(boma);
+        speedboost_end(fighter, boma);
     }
 
     if ![hash40("attack_dash"),
