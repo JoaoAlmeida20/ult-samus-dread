@@ -2,11 +2,54 @@ use super::*;
 use table_consts::*;
 
 pub unsafe fn frame(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectModuleAccessor) {
+    spin_jump(fighter, boma);
+    beam(fighter, boma);
     swing(fighter, boma);
     flashshift(fighter, boma);
     missile_changes(fighter, boma);
     aim_armcannon(fighter, boma);
     var_resets(fighter, boma);
+}
+
+unsafe fn spin_jump(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectModuleAccessor) {
+    let motion = MotionModule::motion_kind(boma);
+    let motion_frame = MotionModule::frame(boma);
+    let stick_x = ControlModule::get_stick_x(boma);
+    let lr = PostureModule::lr(boma);
+    
+    if [hash40("jump_f"), hash40("jump_f_mini")].contains(&motion)
+    && motion_frame <= 1.0
+    && stick_x * lr > 0.5 {
+        MotionModule::change_motion(boma, Hash40::new("jump_f_spin"), 0.0, 1.0, false, 0.0, false, false);
+    }
+}
+
+unsafe fn beam(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectModuleAccessor) {
+    let status = StatusModule::status_kind(boma);
+    let situation = StatusModule::situation_kind(boma);
+    let motion_frame = MotionModule::frame(boma);
+    let is_button_trigger_special = ControlModule::check_button_trigger(boma, *CONTROL_PAD_BUTTON_SPECIAL);
+
+    if status == *FIGHTER_SAMUS_STATUS_KIND_SPECIAL_N_F {
+        let charge_frame = WorkModule::get_int(boma, *FIGHTER_SAMUS_STATUS_SPECIAL_N_WORK_INT_COUNT);
+
+        if charge_frame < 10
+        && 10.0 <= motion_frame
+        && motion_frame <= 30.0
+        && is_button_trigger_special {
+            let hash = 
+                if situation == *SITUATION_KIND_GROUND {
+                    Hash40::new("special_n_f")
+                }
+                else {
+                    Hash40::new("special_air_n_f")
+                };
+            ArticleModule::generate_article_enable(boma, *FIGHTER_SAMUS_GENERATE_ARTICLE_CSHOT, false, -1);
+            WorkModule::on_flag(boma, *FIGHTER_SAMUS_STATUS_SPECIAL_N_FLAG_BULLET_DISP);
+            MotionModule::change_motion(boma, hash, 0.0, 1.0, false, 0.0, false, false);
+        }
+    }
+
 }
 
 unsafe fn swing(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectModuleAccessor) {
@@ -144,7 +187,7 @@ unsafe fn flashshift(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectModu
         *FIGHTER_STATUS_KIND_ATTACK_HI4,
         *FIGHTER_STATUS_KIND_ATTACK_LW4,
         *FIGHTER_STATUS_KIND_ATTACK_AIR].contains(&status) {
-            fighter.change_status(FIGHTER_STATUS_KIND_SPECIAL_S.into(), false.into());
+            fighter.change_status(FIGHTER_STATUS_KIND_SPECIAL_S.into(), true.into());
         }
     }
 }
@@ -161,12 +204,11 @@ unsafe fn missile_changes(fighter: &mut L2CFighterCommon, boma: &mut BattleObjec
     && (ControlModule::check_button_on(boma, *CONTROL_PAD_BUTTON_ATTACK)
         || ControlModule::check_button_on(boma, *CONTROL_PAD_BUTTON_ATTACK_RAW)) {
         if situation == *SITUATION_KIND_GROUND {
-            fighter.change_status(FIGHTER_SAMUS_STATUS_KIND_SPECIAL_S2G.into(), false.into());
+            fighter.change_status(FIGHTER_SAMUS_STATUS_KIND_SPECIAL_S2G.into(), true.into());
         }
         else {
-            fighter.change_status(FIGHTER_SAMUS_STATUS_KIND_SPECIAL_S2A.into(), false.into());
+            fighter.change_status(FIGHTER_SAMUS_STATUS_KIND_SPECIAL_S2A.into(), true.into());
         }
-        ControlModule::clear_command(boma, false);
     }
 
     // Land cancel super missiles
@@ -199,20 +241,20 @@ unsafe fn aim_armcannon(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectM
         || (status == *FIGHTER_SAMUS_STATUS_KIND_SPECIAL_N_F
             && motion_frame <= 22.0)
         || (status == *FIGHTER_STATUS_KIND_SPECIAL_N
-            && motion_frame <= 12.0);
+            && motion_frame >= 10.0);
 
-    // Rotation is flipped around for grounded super missiles for some reason
-    let flip_y = if status == *FIGHTER_SAMUS_STATUS_KIND_SPECIAL_S2G {
+    // Rotation is flipped around for aerial super missiles for some reason
+    let flip_y = if status == *FIGHTER_SAMUS_STATUS_KIND_SPECIAL_S2A {
         -1.0
     }
     else {
         1.0
     };
 
-    let mut armr_rot = Vector3f::zero();
-    let mut arml_rot = Vector3f::zero();
-    let mut shoulderr_rot = Vector3f::zero();
-    let mut waist_rot = Vector3f::zero();
+    let mut clavicler_rot = Vector3f::zero();
+    let mut claviclel_rot = Vector3f::zero();
+    let mut neck_rot = Vector3f::zero();
+    let mut bust_rot = Vector3f::zero();
 
     if super_missile_condition
     || charge_shot_condition {
@@ -225,32 +267,34 @@ unsafe fn aim_armcannon(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectM
         }.clamp(prev_angle - 15.0, prev_angle + 15.0);
         VarModule::set_float(object, vars::samus::instance::AIM_ANGLE, angle);
 
-        let arm_offset = angle.clamp(-45.0, 45.0) * flip_y;
+        let neck_offset = angle.clamp(-30.0, 30.0);
+        neck_rot.z -= neck_offset;
+        fighter.set_joint_rotate("neck", neck_rot);
 
-        if super_missile_condition {
-            armr_rot.z += arm_offset;
-            fighter.set_joint_rotate("armr", armr_rot);
+        let clavicler_offset = angle.clamp(-45.0, 45.0) * flip_y;
+        if charge_shot_condition {
+            clavicler_rot.x += clavicler_offset;
+            fighter.set_joint_rotate("clavicler", clavicler_rot);
 
-            if angle.abs() > 45.0
-            && situation == *SITUATION_KIND_AIR {
-                let shoulderr_offset = angle - (45.0 * angle.signum());
-                shoulderr_rot.z += shoulderr_offset;
-                fighter.set_joint_rotate("shoulderr", shoulderr_rot);
-            }
+            // Left arm would start clipping under -18.0
+            let claviclel_offset = angle.clamp(-18.0, 45.0);
+            claviclel_rot.x -= claviclel_offset;
+            fighter.set_joint_rotate("claviclel", claviclel_rot);
         }
-        else if charge_shot_condition {
-            armr_rot.z += arm_offset;
-            fighter.set_joint_rotate("armr", armr_rot);
-            if status == *FIGHTER_SAMUS_STATUS_KIND_SPECIAL_N_H {
-                arml_rot.z += arm_offset;
-                fighter.set_joint_rotate("arml", arml_rot);
+        else {
+            clavicler_rot.z -= clavicler_offset;
+            fighter.set_joint_rotate("clavicler", clavicler_rot);
+        }
+        if angle.abs() > 45.0
+        && situation == *SITUATION_KIND_AIR {
+            let bust_offset = angle - (45.0 * angle.signum());
+            if charge_shot_condition {
+                bust_rot.z -= bust_offset;
+                fighter.set_joint_rotate("waist", bust_rot);
             }
-    
-            if angle.abs() > 45.0
-            && situation == *SITUATION_KIND_AIR {
-                let waist_offset = (angle - (45.0 * angle.signum())) * -1.0;
-                waist_rot.z += waist_offset;
-                fighter.set_joint_rotate("waist", waist_rot);
+            else {
+                bust_rot.y -= bust_offset;
+                fighter.set_joint_rotate("bust", bust_rot);
             }
         }
     }
@@ -261,22 +305,40 @@ unsafe fn aim_armcannon(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectM
         VarModule::set_float(object, vars::samus::instance::AIM_ANGLE, angle);
 
         if angle != 0.0_f32 {
+            let neck_offset = angle.clamp(-30.0, 30.0);
+            neck_rot.z -= neck_offset;
+            fighter.set_joint_rotate("neck", neck_rot);
+
             if angle.abs() > 45.0
             && situation == *SITUATION_KIND_AIR {
-                if status == *FIGHTER_SAMUS_STATUS_KIND_SPECIAL_S2A {
-                    let shoulderr_offset = angle - (45.0 * angle.signum());
-                    shoulderr_rot.z += shoulderr_offset;
-                    fighter.set_joint_rotate("shoulderr", shoulderr_rot);
+                let bust_offset = angle - (45.0 * angle.signum());
+                if [*FIGHTER_SAMUS_STATUS_KIND_SPECIAL_N_F,
+                *FIGHTER_SAMUS_STATUS_KIND_SPECIAL_N_E,
+                *FIGHTER_SAMUS_STATUS_KIND_SPECIAL_N_C].contains(&status) {
+                    bust_rot.z -= bust_offset;
+                    fighter.set_joint_rotate("waist", bust_rot);
                 }
                 else {
-                    let waist_offset = (angle - (45.0 * angle.signum())) * -1.0;
-                    waist_rot.z += waist_offset;
-                    fighter.set_joint_rotate("waist", waist_rot);
+                    bust_rot.y -= bust_offset;
+                    fighter.set_joint_rotate("bust", bust_rot);
                 }
             }
-            let arm_offset = angle.clamp(-45.0, 45.0) * flip_y;
-            armr_rot.z += arm_offset;
-            fighter.set_joint_rotate("armr", armr_rot);
+
+            let clavicler_offset = angle.clamp(-45.0, 45.0) * flip_y;
+            if [*FIGHTER_SAMUS_STATUS_KIND_SPECIAL_N_F,
+            *FIGHTER_SAMUS_STATUS_KIND_SPECIAL_N_E,
+            *FIGHTER_SAMUS_STATUS_KIND_SPECIAL_N_C].contains(&status) {
+                clavicler_rot.x += clavicler_offset;
+                fighter.set_joint_rotate("clavicler", clavicler_rot);
+
+                let claviclel_offset = angle.clamp(-18.0, 45.0);
+                claviclel_rot.x -= claviclel_offset;
+                fighter.set_joint_rotate("claviclel", claviclel_rot);
+            }
+            else {
+                clavicler_rot.z -= clavicler_offset;
+                fighter.set_joint_rotate("clavicler", clavicler_rot);
+            }
         }
     }
 }

@@ -2,11 +2,27 @@ use super::*;
 
 pub fn install() {
     install_acmd_scripts!(
+        samus_cshot_shot_game,
         samus_supermissile_ready_game,
         samus_supermissile_straight_game,
         samus_supermissile_straight_effect,
         samus_supermissile_sburst_game
     );
+}
+
+#[acmd_script( agent = "samus_cshot", script = "game_shoot" , category = ACMD_GAME)]
+unsafe fn samus_cshot_shot_game(fighter: &mut L2CAgentBase) {
+    if is_excute(fighter) {
+        let charge = WorkModule::get_float(fighter.module_accessor, *WEAPON_SAMUS_CSHOT_INSTANCE_WORK_ID_FLOAT_CHARGE);
+        if charge < 0.1 {
+            ATTACK(fighter, 0, 0, Hash40::new("top"), 1.5, 361, 0, 0, 0, 1.9, 0.0, 0.0, 0.0, None, None, None, 1.0, 1.0, *ATTACK_SETOFF_KIND_OFF, *ATTACK_LR_CHECK_SPEED, false, 0, 0.0, 0, true, true, false, false, false, *COLLISION_SITUATION_MASK_GA, *COLLISION_CATEGORY_MASK_ALL, *COLLISION_PART_MASK_ALL, false, Hash40::new("collision_attr_elec"), *ATTACK_SOUND_LEVEL_S, *COLLISION_SOUND_ATTR_KICK, *ATTACK_REGION_ENERGY);
+        }
+        else {
+            ATTACK(fighter, 0, 0, Hash40::new("top"), 5.0, 361, 42, 0, 14, 1.9, 0.0, 0.0, 0.0, None, None, None, 1.0, 1.0, *ATTACK_SETOFF_KIND_ON, *ATTACK_LR_CHECK_SPEED, false, -2.5, 0.0, 0, true, true, false, false, false, *COLLISION_SITUATION_MASK_GA, *COLLISION_CATEGORY_MASK_ALL, *COLLISION_PART_MASK_ALL, false, Hash40::new("collision_attr_elec"), *ATTACK_SOUND_LEVEL_S, *COLLISION_SOUND_ATTR_KICK, *ATTACK_REGION_ENERGY);
+            ATTACK(fighter, 1, 0, Hash40::new("top"), 28.0, 40, 50, 0, 46, 8.0, 0.0, 0.0, 0.0, None, None, None, 1.0, 1.0, *ATTACK_SETOFF_KIND_ON, *ATTACK_LR_CHECK_SPEED, false, -7, 0.0, 0, true, true, false, false, false, *COLLISION_SITUATION_MASK_GA, *COLLISION_CATEGORY_MASK_ALL, *COLLISION_PART_MASK_ALL, false, Hash40::new("collision_attr_elec"), *ATTACK_SOUND_LEVEL_L, *COLLISION_SOUND_ATTR_KICK, *ATTACK_REGION_ENERGY);
+            attack!(fighter, *MA_MSC_CMD_ATTACK_SET_LERP, 0, 1);
+        }
+    }
 }
 
 #[acmd_script( agent = "samus_supermissile", script = "game_ready" , category = ACMD_GAME)]

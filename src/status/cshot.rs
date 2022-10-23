@@ -51,7 +51,13 @@ unsafe fn samus_cshot_shoot_init(weapon: &mut L2CWeaponCommon) -> L2CValue {
     };
     let min_speed = WorkModule::get_param_float(weapon.module_accessor, hash40("param_cshot"), hash40("min_speed"));
     let max_speed = WorkModule::get_param_float(weapon.module_accessor, hash40("param_cshot"), hash40("max_speed"));
-    let speed = (max_speed - min_speed) * charge + min_speed;
+    let speed = 
+        if charge < 0.1 {
+            vl::param_cshot::uncharged_speed
+        }
+        else {
+            (max_speed - min_speed) * charge + min_speed
+        };
     let speed_x = angle.to_radians().cos() * speed * lr;
     let speed_y = angle.to_radians().sin() * speed;
     sv_kinetic_energy!(
