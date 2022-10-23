@@ -5,6 +5,7 @@ pub fn install() {
         special_lw_game,
         special_air_lw_game,
         special_lw_effect,
+        special_lw_sound,
         special_game,
         special_effect,
         special_sound,
@@ -72,6 +73,15 @@ unsafe fn special_lw_effect(fighter: &mut L2CAgentBase) {
         EFFECT_FOLLOW(fighter, Hash40::new("samus_bomb_jump"), Hash40::new("rot"), 0, 0, 0, 0, 0, 0, 0.48, true);
     }
     
+}
+
+#[acmd_script( agent = "samus", scripts = [ "sound_speciallw", "sound_specialairlw" ], category = ACMD_SOUND)]
+unsafe fn special_lw_sound(fighter: &mut L2CAgentBase) {
+    let lua_state = fighter.lua_state_agent;
+    frame(lua_state, 11.0);
+    if is_excute(fighter) {
+        PLAY_SE(fighter, Hash40::new("se_samus_escape_ex"));
+    }
 }
 
 #[acmd_script( agent = "samus", script = "game_special" , category = ACMD_GAME)]
