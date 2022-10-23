@@ -14,7 +14,7 @@ unsafe fn pre_special_s(fighter: &mut L2CFighterCommon) -> L2CValue {
     StatusModule::init_settings(
         fighter.module_accessor,
         SituationKind(*SITUATION_KIND_NONE),
-        *FIGHTER_KINETIC_TYPE_UNIQ,
+        *FIGHTER_KINETIC_TYPE_MOTION,
         *GROUND_CORRECT_KIND_KEEP as u32,
         GroundCliffCheckKind(*GROUND_CLIFF_CHECK_KIND_NONE),
         true,
@@ -99,6 +99,16 @@ unsafe extern "C" fn main_special_s_loop(fighter: &mut L2CFighterCommon) -> L2CV
             StatusModule::change_status_request_from_script(boma, *FIGHTER_STATUS_KIND_WALL_JUMP, true);
         }
     }
+
+    let stick_x = fighter.global_table[STICK_X].get_f32() * PostureModule::lr(boma);
+    let speed_mul = 0.8 + 0.2 * stick_x;
+    sv_kinetic_energy!(
+        set_speed_mul,
+        fighter,
+        FIGHTER_KINETIC_ENERGY_ID_MOTION,
+        speed_mul.powi(2)
+    );
+    MotionModule::set_rate(boma, 1.0 / speed_mul);
 
     if MotionModule::is_end(fighter.module_accessor) {
         if situation == *SITUATION_KIND_GROUND {

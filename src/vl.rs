@@ -15,7 +15,7 @@ pub mod param_shinespark {
 
 pub mod param_flashshift {
     pub const cooldown : f32 = 180.0;
-    pub const chain_frame : f32 = 25.0;
+    pub const chain_frame : f32 = 30.0;
     pub const chain_max_num : i32 = 3;
 }
 
@@ -25,4 +25,8 @@ pub mod param_supermissile {
 
 pub mod param_speciallw {
     pub const bomb_max_num_airtime: i32 = 8;
+}
+
+pub mod param_cshot {
+    pub const uncharged_speed : f32 = 4.5;
 }
