@@ -165,7 +165,8 @@ unsafe fn flashshift(fighter: &mut L2CFighterCommon, boma: &mut BattleObjectModu
         }
     }
 
-    if VarModule::get_float(object, vars::samus::instance::FLASHSHIFT_CHAIN_TIMER) > 0.0 {
+    if VarModule::get_float(object, vars::samus::instance::FLASHSHIFT_CHAIN_TIMER) > 0.0
+    && WorkModule::get_int(boma, *FIGHTER_INSTANCE_WORK_ID_INT_HIT_STOP_ATTACK_SUSPEND_FRAME) <= 0 {
         VarModule::sub_float(object, vars::samus::instance::FLASHSHIFT_CHAIN_TIMER, 1.0);
         if VarModule::get_float(object, vars::samus::instance::FLASHSHIFT_CHAIN_TIMER) <= 0.0 {
             VarModule::set_int(object, vars::samus::instance::FLASHSHIFT_CHAIN_COUNT, 0);
