@@ -15,7 +15,7 @@ pub mod samus {
             pub const SHINESPARK_STORED_EFFECT_HANDLE : i32 = 0x0102;
             pub const SPEEDBOOST_STATUS : i32 = 0x0103;
             pub const DOUBLE_TAP_DOWN_FRAME: i32 = 0x0104;
-            pub const BOMB_BURST_COUNTER: i32 = 0x0105;
+            pub const FIVE_BOMB_DROP_COUNTER: i32 = 0x0105;
             
         // floats
             pub const AIM_ANGLE : i32 = 0x0100;

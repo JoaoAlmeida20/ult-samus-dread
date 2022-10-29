@@ -35,8 +35,8 @@ unsafe fn special_lw_game(fighter: &mut L2CAgentBase) {
         VisibilityModule::set_int64(boma, Hash40::new("body").hash as i64, Hash40::new("body_sphere").hash as i64);
         WorkModule::on_flag(boma, *FIGHTER_SAMUS_STATUS_SPECIAL_LW_FLAG_MV);
 
-        let bomb_burst_counter = VarModule::get_int(object, vars::samus::instance::BOMB_BURST_COUNTER);
-        for n in 0..bomb_burst_counter {
+        let five_bomb_drop_counter = VarModule::get_int(object, vars::samus::instance::FIVE_BOMB_DROP_COUNTER);
+        for n in 0..five_bomb_drop_counter {
             ArticleModule::generate_article_enable(boma, *FIGHTER_SAMUS_GENERATE_ARTICLE_BOMB, false, -1);
             ArticleModule::shoot_exist(boma, *FIGHTER_SAMUS_GENERATE_ARTICLE_BOMB, app::ArticleOperationTarget(*ARTICLE_OPE_TARGET_ALL), false);    
         }
@@ -64,8 +64,8 @@ unsafe fn special_air_lw_game(fighter: &mut L2CAgentBase) {
         WorkModule::on_flag(boma, *FIGHTER_SAMUS_STATUS_SPECIAL_LW_FLAG_MV);
         VarModule::on_flag(object, vars::samus::instance::MORPHBALL_STALL_USED);
 
-        let bomb_burst_counter = VarModule::get_int(object, vars::samus::instance::BOMB_BURST_COUNTER);
-        for n in 0..bomb_burst_counter {
+        let five_bomb_drop_counter = VarModule::get_int(object, vars::samus::instance::FIVE_BOMB_DROP_COUNTER);
+        for n in 0..five_bomb_drop_counter {
             ArticleModule::generate_article_enable(boma, *FIGHTER_SAMUS_GENERATE_ARTICLE_BOMB, false, -1);
             ArticleModule::shoot_exist(boma, *FIGHTER_SAMUS_GENERATE_ARTICLE_BOMB, app::ArticleOperationTarget(*ARTICLE_OPE_TARGET_ALL), false);    
         }

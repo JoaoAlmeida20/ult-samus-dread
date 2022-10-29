@@ -30,3 +30,12 @@ pub mod param_speciallw {
 pub mod param_cshot {
     pub const uncharged_speed : f32 = 4.5;
 }
+
+pub mod param_fivebombdrop {
+    pub const total_bombs_num: i32 = 3;
+    pub const speed_x0_max: f32 = 1.0;
+    pub const speed_y0_min: f32 = 0.5;
+    pub const speed_y0_max: f32 = 1.0;
+    pub const brake_x: f32 = 0.06;
+    pub const accel_y: f32 = -0.05;
+}

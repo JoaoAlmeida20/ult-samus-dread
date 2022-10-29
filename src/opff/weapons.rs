@@ -59,29 +59,35 @@ pub fn samus_bomb_frame(weapon: &mut smash::lua2cpp::L2CFighterBase) {
         if sv_battle_object::kind(owner_id) == *FIGHTER_KIND_SAMUS {
             let samus = utils::get_battle_object_from_id(owner_id);
             let samus_boma = &mut *(*samus).module_accessor;
+            let samus_status = StatusModule::status_kind(samus_boma);
 
+            // Five Bomb Drop
             if StatusModule::status_kind(boma) == *WEAPON_SAMUS_BOMB_STATUS_KIND_FALL
             && MotionModule::frame(boma) == 1.0
-            && VarModule::get_int(samus, vars::samus::instance::BOMB_BURST_COUNTER) > 0 {
-                VarModule::dec_int(samus, vars::samus::instance::BOMB_BURST_COUNTER);
+            && VarModule::get_int(samus, vars::samus::instance::FIVE_BOMB_DROP_COUNTER) > 0 {
+                VarModule::dec_int(samus, vars::samus::instance::FIVE_BOMB_DROP_COUNTER);
 
-                let rng = app::sv_math::rand(hash40("fighter"), 10) as f32;
-                let rng_dir = app::sv_math::rand(hash40("fighter"), 2);
-                let dir =
-                    if rng_dir == 0 {
-                        1.0
-                    }
-                    else {
-                        -1.0
-                    };
+                let rng_n = 10;
+                let rng = app::sv_math::rand(hash40("fighter"), rng_n) as f32;
+                let counter = VarModule::get_int(samus, vars::samus::instance::FIVE_BOMB_DROP_COUNTER) as f32;
+                let total_bombs_num = vl::param_fivebombdrop::total_bombs_num as f32;
+                let speed_x_max = vl::param_fivebombdrop::speed_x0_max;
+                let bomb_social_distance = (speed_x_max * 2.0) / total_bombs_num;
+                let variation = rng.clamp(1.0, rng_n as f32 - 2.0) / (rng_n - 1) as f32;
+                let speed_x = speed_x_max - bomb_social_distance * (variation + counter);
+
+                let speed_y_min = vl::param_fivebombdrop::speed_y0_min;
+                let speed_y_max = vl::param_fivebombdrop::speed_y0_max;
+                let speed_y_diff = speed_y_max - speed_y_min;
+                let speed_y = speed_y_max - speed_y_diff * (speed_x.abs() / speed_x_max);
 
                 KineticModule::change_kinetic(boma, *WEAPON_KINETIC_TYPE_NORMAL);
                 sv_kinetic_energy!(
                     set_speed,
                     weapon,
                     WEAPON_KINETIC_ENERGY_RESERVE_ID_NORMAL,
-                    0.0 + dir * rng * 0.1,
-                    1.5 - rng * 0.1
+                    speed_x,
+                    speed_y
                 );
 
                 sv_kinetic_energy!(
@@ -89,14 +95,14 @@ pub fn samus_bomb_frame(weapon: &mut smash::lua2cpp::L2CFighterBase) {
                     weapon,
                     WEAPON_KINETIC_ENERGY_RESERVE_ID_NORMAL,
                     0.0,
-                    -0.05
+                    vl::param_fivebombdrop::accel_y
                 );
 
                 sv_kinetic_energy!(
                     set_brake,
                     weapon,
                     WEAPON_KINETIC_ENERGY_RESERVE_ID_NORMAL,
-                    0.05,
+                    vl::param_fivebombdrop::brake_x,
                     0.0
                 );
             

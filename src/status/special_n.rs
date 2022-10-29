@@ -152,7 +152,7 @@ unsafe extern "C" fn main_special_n_h_loop(fighter: &mut L2CFighterCommon) -> L2
 
             if VarModule::get_int(object, vars::samus::instance::DOUBLE_TAP_DOWN_FRAME) != 0
             && ControlModule::get_stick_y(boma) <= -0.75 {
-                VarModule::set_int(object, vars::samus::instance::BOMB_BURST_COUNTER, 3);
+                VarModule::set_int(object, vars::samus::instance::FIVE_BOMB_DROP_COUNTER, vl::param_fivebombdrop::total_bombs_num);
                 fighter.change_status(FIGHTER_STATUS_KIND_SPECIAL_LW.into(), true.into());
                 return 1.into();
             }
