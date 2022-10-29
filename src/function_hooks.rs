@@ -3,8 +3,28 @@ use table_consts::*;
 
 pub fn install() {
     skyline::install_hooks!(
+        samus_vtable_bombjump,
         get_param_float_hook
     );
+}
+
+#[skyline::hook(offset = 0x10f3780)]
+pub unsafe fn samus_vtable_bombjump(vtable: u64, fighter: &mut Fighter) {
+    let boma = fighter.battle_object.module_accessor;
+    let status = StatusModule::status_kind(boma);
+    
+    // dont wanna make changes to dark samus who shares this vtable offset
+    if utility::get_kind(boma_reference) == *FIGHTER_KIND_SAMUS {
+        // Block bomb jumping when unmorphed
+        if ![*FIGHTER_SAMUS_STATUS_KIND_SPECIAL_GROUND_LW,    
+        *FIGHTER_SAMUS_STATUS_KIND_SPECIAL_AIR_LW,
+        *FIGHTER_SAMUS_STATUS_KIND_BOMB_JUMP_G,
+        *FIGHTER_SAMUS_STATUS_KIND_BOMB_JUMP_A].contains(&status) {
+            WorkModule::off_flag(boma, 0x200000E2); // FIGHTER_SAMUS_INSTANCE_WORK_ID_FLAG_IS_CHANGE_STATUS_BOMBJUMP
+        }
+    }
+    
+    original!()(vtable, fighter)
 }
 
 #[skyline::hook(offset=0x4e53C0)]
